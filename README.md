@@ -1,140 +1,69 @@
-# Concessionária - Site (export estático / GitHub Pages)
+# Concessionária — site de veículos
 
-Esta pasta é a variante **estática** do mesmo app em `versao_nena/`: gera a pasta `out/` com `next build` e `output: "export"`, pronta para o GitHub Pages. Não use `next start` após o build; sirva `out/` com qualquer host estático.
+[![Deploy](https://github.com/thales-fratarcangeli/garagem_v_1/actions/workflows/deploy-github-pages.yml/badge.svg)](https://github.com/thales-fratarcangeli/garagem_v_1/actions/workflows/deploy-github-pages.yml) ![Next.js](https://img.shields.io/badge/Next.js-15-000000?logo=nextdotjs&logoColor=white) ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white) ![Tailwind](https://img.shields.io/badge/Tailwind_CSS-3-06B6D4?logo=tailwindcss&logoColor=white)
 
-## Deploy no GitHub Pages
+Site de uma concessionária, **mobile-first**, com página inicial e listagem de
+veículos com filtros avançados. Gerado como site estático e publicado no
+GitHub Pages.
 
-1. Crie um repositório cujo conteúdo em **raiz** seja esta pasta (ou suba esta pasta para a raiz do repo).
-2. No GitHub: **Settings** → **Pages** → **Build and deployment** → **Source: GitHub Actions**.
-3. Faça push na branch `main` (ou `master`); o workflow [`.github/workflows/deploy-github-pages.yml`](.github/workflows/deploy-github-pages.yml) faz `npm ci`, define `NEXT_PUBLIC_BASE_PATH` com o **nome do repositório** (para `https://<user>.github.io/<repo>/`) e publica `out/`.
+**🔗 Demo:** https://thales-fratarcangeli.github.io/garagem_v_1/
 
-**Domínio customizado / site na raiz** (`https://<user>.github.io/`): defina a variável de ambiente vazia no build (ou no workflow, `NEXT_PUBLIC_BASE_PATH: ""`).
+## Funcionalidades
 
-### `NEXT_PUBLIC_BASE_PATH` (local)
-
-- **Padrão (GitHub `…github.io/nome-do-repo/`)** — use o **nome do repo** (com ou sem barra inicial; o `next.config` normaliza):
-
-  PowerShell: `$env:NEXT_PUBLIC_BASE_PATH="meu-repo"; npm run build`
-
-  bash: `NEXT_PUBLIC_BASE_PATH=meu-repo npm run build`
-
-- **Sem prefixo (raiz do domínio)** — omita a variável ou deixe vazia, depois `npm run build`.
-
-Testar: `npx --yes serve out` e abrir a URL que o `serve` indicar. Com `basePath` (ex.: repositório `meu-repo`), o app responde em `http://localhost:3000/meu-repo` (a pasta `out` em disco continua com `index.html` e `img/` na raiz; o primeiro segmento da URL imita o GitHub Pages).
-
----
-
-Site institucional + busca de carros para uma concessionária. Esta entrega contempla apenas as **telas** (UI), sem backend.
-
-> Implementação focada em mobile-first, responsividade e fácil manutenção. Áreas de mídia (banners, ícones, fotos de carros) são exibidas como placeholders para serem preenchidos depois.
+- **Home:** carrossel de destaques próprio (sem bibliotecas pesadas), categorias,
+  notícias e chamada para venda do veículo
+- **Listagem `/carros`** com filtros reativos — a lista atualiza na hora:
+  - condição, marca, ano, preço e quilometragem (sliders duplos)
+  - itens de série, cor, portas, final da placa e combustível
+  - ordenação por relevância, preço, km e ano
+- **Mobile:** menu hambúrguer e filtros em drawer lateral com "Ver X resultados"
+- **Acessibilidade:** componentes sobre Radix UI (padrão shadcn/ui)
 
 ## Stack
 
-- [Next.js 15](https://nextjs.org/) — App Router
-- [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
-- [Tailwind CSS 3](https://tailwindcss.com/) com tokens de cor centralizados
-- Componentes acessíveis sobre [Radix UI](https://www.radix-ui.com/) (padrão shadcn/ui)
-- [lucide-react](https://lucide.dev/) para ícones
+Next.js 15 (App Router, `output: "export"`) · React 19 · TypeScript ·
+Tailwind CSS 3 · Radix UI / shadcn/ui · lucide-react · GitHub Actions
 
-## Como rodar
+## Estrutura
 
-Requisitos: Node.js 20+ (testado com Node 22).
+```
+app/
+├── page.tsx               Home
+└── carros/page.tsx        listagem com filtros
+components/
+├── home/                  carrossel, categorias, notícias, CTA
+├── carros/                painel e drawer de filtros, card e grade de resultados
+├── layout/                header e footer
+└── ui/                    componentes base (button, sheet, slider, select...)
+lib/
+├── mock-cars.ts           veículos de exemplo
+├── filter-options.ts      opções dos filtros
+└── car-filters.ts         applyFilters, sortCars, countActiveFilters
+```
+
+A cor da marca fica centralizada em `brand-{50..900}` no `tailwind.config.ts`:
+trocar a identidade visual é editar um bloco só.
+
+## Rodando localmente
 
 ```bash
 npm install
-npm run dev
+npm run dev          # http://localhost:3000
 ```
 
-Abra [http://localhost:3000](http://localhost:3000).
-
-Para gerar o export estático (pasta `out/`):
+Build estático (gera `out/`):
 
 ```bash
-npm run build
+# PowerShell: $env:NEXT_PUBLIC_BASE_PATH="garagem_v_1"; npm run build
+NEXT_PUBLIC_BASE_PATH=garagem_v_1 npm run build
 ```
 
-Nesta variante, **não** use `next start` (não há servidor Node em produção). Para pré-visualizar: `npx --yes serve out`.
+O deploy é automático: cada push na `main` dispara o workflow
+`deploy-github-pages.yml`, que faz o build e publica `out/` no GitHub Pages.
 
-## Páginas implementadas
+## Próximos passos
 
-| Rota | Arquivo | Descrição |
-|------|---------|-----------|
-| `/` | [app/page.tsx](app/page.tsx) | Home com carrossel automático, categorias e notícias |
-| `/carros` | [app/carros/page.tsx](app/carros/page.tsx) | Lista de carros com filtros laterais (drawer no mobile) |
-
-Ambas compartilham o mesmo header e footer definidos em [app/layout.tsx](app/layout.tsx).
-
-## Estrutura de pastas
-
-```
-.
-├── app/
-│   ├── layout.tsx           # Layout raiz (header + footer)
-│   ├── page.tsx             # Home
-│   ├── carros/page.tsx      # Lista de carros
-│   └── globals.css          # Variáveis de tema + Tailwind
-├── components/
-│   ├── layout/              # Header e Footer compartilhados
-│   ├── home/                # Componentes da home (carrossel, categorias, notícias, CTA)
-│   ├── carros/              # Filtros (painel + drawer), card e grid de resultados
-│   ├── common/              # MediaPlaceholder (área reservada para imagens)
-│   └── ui/                  # Componentes base (Button, Sheet, Accordion, etc.)
-├── lib/
-│   ├── utils.ts             # cn(), formatBRL(), formatKm()
-│   ├── mock-cars.ts         # Lista mock de ~14 carros
-│   ├── filter-options.ts    # Opções dos filtros (marcas, cores, combustíveis…)
-│   └── car-filters.ts       # Tipos, defaults, applyFilters() e sortCars()
-├── types/
-│   └── car.ts               # Tipos de domínio (Car, CarFuel, CarColor…)
-├── tailwind.config.ts       # Paleta brand (azul) e tokens
-└── components.json          # Config shadcn/ui
-```
-
-## Onde colocar suas imagens / ícones
-
-Todos os pontos onde o usuário precisa adicionar mídia usam o componente
-[`MediaPlaceholder`](components/common/media-placeholder.tsx). Cada ocorrência
-tem um `label` que descreve exatamente o que entra ali. Procure pelo componente
-no projeto para localizar e substituir:
-
-- `Banner principal 1/2/3` — slides do carrossel da home
-- `Ícone SUV/Sedan/Hatch/...` — ícones das categorias
-- `Capa notícia 1/2/3` — capas dos cards de notícia
-- `Foto {marca} {modelo}` — fotos dos carros na lista
-- `LOGO` — logos no header e footer (no momento são divs com texto)
-
-Quando for substituir por imagens reais, troque `<MediaPlaceholder ... />` por
-`<Image src=... alt=... fill className="object-cover" />` do `next/image`.
-
-## Paleta / tema
-
-A cor principal (azul) está centralizada como `brand-{50..900}` em
-[`tailwind.config.ts`](tailwind.config.ts). Para mudar a identidade visual
-basta editar esse bloco — todos os componentes usam essas classes
-(`bg-brand-500`, `text-brand-600`, etc.).
-
-## Filtros disponíveis em `/carros`
-
-- Condição (Novo / Usado)
-- Marca (multi-seleção)
-- Ano (faixa de "De" / "Até")
-- Preço (slider duplo + inputs)
-- Quilometragem (slider duplo + inputs)
-- Itens (Ar-condicionado, ABS, Multimídia, etc.)
-- Cor (chips com swatch)
-- Portas (2 / 4)
-- Final da placa (0–9)
-- Combustível (Flex, Gasolina, Diesel, Híbrido, Elétrico)
-- Ordenação (relevância, preço, km, ano)
-
-Os filtros são reativos: a lista atualiza imediatamente conforme o usuário
-seleciona opções. Em mobile, abrem em um drawer lateral com botão "Ver X resultados".
-
-## Próximos passos sugeridos (não implementados)
-
-- Páginas internas: detalhe do carro, vender, serviços, login, contato
-- Backend / API real para listar carros (substituir `lib/mock-cars.ts`)
-- Persistir filtros na URL (search params) para compartilhar buscas
-- Integrar autenticação (NextAuth, Clerk, etc.)
-- Imagens reais via `next/image` + CDN
-- Métricas (Vercel Analytics) e SEO avançado
+- [ ] Página de detalhe do veículo, contato e "venda seu carro"
+- [ ] API real no lugar de `lib/mock-cars.ts`
+- [ ] Filtros persistidos na URL para compartilhar buscas
+- [ ] Fotos reais com `next/image`
